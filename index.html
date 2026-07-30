@@ -71,6 +71,30 @@
                      letter-spacing:.5px; padding-top:12px; padding-bottom:2px; border-top:none; }
   .stats tr.tot td { font-weight:700; }
   .empty { color:var(--muted); font-size:12px; }
+
+  /* ---- Detail modal (experimental drill-down) ---- */
+  .card[data-detail] { cursor:pointer; transition:border-color .12s, box-shadow .12s; }
+  .card[data-detail]:hover { border-color:var(--teal); box-shadow:0 2px 10px rgba(14,125,109,.10); }
+  .hint { font-size:10.5px; color:var(--muted); text-align:right; margin-top:10px; }
+  #modal { position:fixed; inset:0; background:rgba(30,36,42,.45); display:flex;
+           align-items:center; justify-content:center; padding:20px; z-index:50; }
+  #modal[hidden] { display:none; }
+  #modal-box { background:var(--card); border-radius:10px; max-width:560px; width:100%;
+               max-height:85vh; overflow:auto; padding:22px 24px; position:relative;
+               box-shadow:0 10px 40px rgba(0,0,0,.22); }
+  #modal-close { position:absolute; top:10px; right:12px; border:none; background:none;
+                 font-size:20px; color:var(--muted); cursor:pointer; line-height:1; }
+  #modal-close:hover { color:var(--ink); }
+  #modal-box h3 { font-size:15px; color:var(--teal); margin-bottom:2px; }
+  #modal-box .msub { font-size:11px; color:var(--muted); margin-bottom:16px; }
+  #modal-box h4 { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase;
+                  letter-spacing:.5px; margin:18px 0 6px; }
+  #modal-box h4:first-of-type { margin-top:0; }
+  table.bridge { width:100%; border-collapse:collapse; }
+  .bridge td { padding:7px 0; border-top:1px solid var(--line); font-size:13px; }
+  .bridge td:last-child { text-align:right; font-weight:600; white-space:nowrap; }
+  .bridge tr.sub td { font-weight:400; color:var(--muted); }
+  .bridge tr.res td { font-weight:700; }
   @media print {
     body { background:#fff; padding:0; }
     .toolbar, #uploader { display:none !important; }
@@ -90,6 +114,13 @@
     <input type="file" id="fileinput" accept=".csv,text/csv" multiple hidden>
     <div id="filelist"></div>
     <div id="status"></div>
+  </div>
+
+  <div id="modal" hidden>
+    <div id="modal-box">
+      <button id="modal-close" type="button" aria-label="Close">&#10005;</button>
+      <div id="modal-content"></div>
+    </div>
   </div>
 
   <div id="dashboard">
@@ -255,6 +286,14 @@ function extractMetrics(bs, pl) {
   m.loans = otherCl.filter(([k]) => k.toLowerCase().includes("loan")).concat(longterm);
   m.loanTotal = m.loans.reduce((s, [, v]) => s + v, 0);
   m.debtTotal = m.loanTotal + (m.creditTotal || 0);
+
+  // Detail breakdowns for the drill-down modal
+  m.incomeCategories = topLevelCategories(sectionRows(pl.rows, "Income", "Total for Income"))
+    .filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  m.expenseCategories = topLevelCategories(sectionRows(pl.rows, "Expenses", "Total for Expenses"))
+    .sort((a, b) => b[1] - a[1]);
+  m.otherExpenseItems = topLevelCategories(sectionRows(pl.rows, "Other Expenses", "Total for Other Expenses"));
+  m.netOperatingIncome = findRow(pl.rows, "net operating income");
   return m;
 }
 
@@ -327,6 +366,7 @@ function gaugeSvg(pct, bigLabel, bigValue, width = 230) {
 /* ================= Dashboard rendering ================= */
 
 function renderDashboard(m) {
+  currentMetrics = m;   // keep for the detail modal
   // Everything Net Income subtracts from Revenue: cost of goods sold, operating
   // expenses, AND other (non-operating) expenses — so Revenue - totalCosts = Net Income.
   const totalCosts = (m.cogs || 0) + (m.expenses || 0) + (m.otherExpenses || 0);
@@ -345,7 +385,7 @@ function renderDashboard(m) {
   const niClass = (m.netIncome || 0) >= 0 ? "pos" : "neg";
 
   document.getElementById("grid").innerHTML = `
-    <div class="card">
+    <div class="card" data-detail="debt">
       <h2>Debt Summary</h2>
       <div class="period">${esc(m.bsPeriod || "")}</div>
       <div class="body">
@@ -357,9 +397,10 @@ function renderDashboard(m) {
           <tr class="tot"><td>Total debt</td><td class="neg">${fmtMoney(m.debtTotal)}</td></tr>
         </table>
       </div>
+      <div class="hint">Click for details</div>
     </div>
 
-    <div class="card">
+    <div class="card" data-detail="pnl">
       <h2>Revenue &amp; Expenses</h2>
       <div class="period">${esc(m.plPeriod || "")}</div>
       <div class="body">
@@ -373,18 +414,20 @@ function renderDashboard(m) {
           <tr><td>Net income</td><td class="${niClass}">${fmtMoney(m.netIncome)}</td></tr>
         </table>
       </div>
+      <div class="hint">Click for details</div>
     </div>
 
-    <div class="card">
+    <div class="card" data-detail="margins">
       <h2>Profit Margins</h2>
       <div class="period">${esc(m.plPeriod || "")}</div>
       <div class="gauges">
         <div>${gaugeSvg(m.grossMargin, "Gross Profit", fmtMoney(m.grossProfit))}</div>
         <div>${gaugeSvg(m.netMargin, "Net Profit", fmtMoney(m.netIncome))}</div>
       </div>
+      <div class="hint">Click for details</div>
     </div>
 
-    <div class="card wide">
+    <div class="card wide" data-detail="cash">
       <h2>Cash Balances</h2>
       <div class="period">${esc(m.bsPeriod || "")}</div>
       <div class="body">
@@ -393,9 +436,10 @@ function renderDashboard(m) {
         </div>
         <div>${cashBars}</div>
       </div>
+      <div class="hint">Click for details</div>
     </div>
 
-    <div class="card wide">
+    <div class="card wide" data-detail="arap">
       <h2>Receivables &amp; Payables</h2>
       <div class="period">${esc(m.bsPeriod || "")}</div>
       <div class="body">
@@ -405,12 +449,114 @@ function renderDashboard(m) {
         </div>
         <div>${arapBars}</div>
       </div>
+      <div class="hint">Click for details</div>
     </div>`;
 
   document.getElementById("uploader").style.display = "none";
   document.getElementById("dashboard").style.display = "block";
   document.title = (m.company ? m.company + " \u2014 " : "") + "Financial Dashboard";
 }
+
+/* ================= Detail modal (experimental drill-down) ================= */
+
+let currentMetrics = null;   // saved by renderDashboard so click handlers can use it
+
+function pctShareRows(items, total) {
+  return items.map(([k, v]) =>
+    `<tr><td>${esc(k)}</td><td>${fmtMoney(v)} <span style="color:var(--muted);font-weight:400">(${total ? (v / total * 100).toFixed(1) : "0.0"}%)</span></td></tr>`
+  ).join("");
+}
+
+function detailHTML(kind, m) {
+  const sub = `<div class="msub">${esc(m.company || "")}</div>`;
+
+  if (kind === "pnl") {
+    const incBars = m.incomeCategories.length ? hbarSvg(m.incomeCategories.slice(0, 6), { rowH: 30 }) : "<p class='empty'>No income categories found</p>";
+    const expBars = m.expenseCategories.length ? hbarSvg(m.expenseCategories.slice(0, 6), { rowH: 30, color: "#e8564f" }) : "<p class='empty'>No expense categories found</p>";
+    return `<h3>Revenue &amp; Expenses — Detail</h3>${sub}
+      <h4>From revenue to net income</h4>
+      <table class="bridge">
+        <tr><td>Revenue</td><td>${fmtMoney(m.revenue)}</td></tr>
+        <tr class="sub"><td>− Cost of goods sold</td><td>${fmtMoney(m.cogs)}</td></tr>
+        <tr class="res"><td>= Gross profit</td><td>${fmtMoney(m.grossProfit)}</td></tr>
+        <tr class="sub"><td>− Operating expenses</td><td>${fmtMoney(m.expenses)}</td></tr>
+        <tr class="res"><td>= Net operating income</td><td>${fmtMoney(m.netOperatingIncome ?? ((m.grossProfit ?? 0) - (m.expenses ?? 0)))}</td></tr>
+        <tr class="sub"><td>− Other expenses</td><td>${fmtMoney(m.otherExpenses)}</td></tr>
+        <tr class="res"><td>= Net income</td><td class="${(m.netIncome || 0) >= 0 ? "pos" : "neg"}">${fmtMoney(m.netIncome)}</td></tr>
+      </table>
+      <h4>Income by category</h4>${incBars}
+      <h4>Largest operating expenses</h4>${expBars}`;
+  }
+
+  if (kind === "margins") {
+    const opInc = m.netOperatingIncome ?? ((m.grossProfit ?? 0) - (m.expenses ?? 0));
+    const opMargin = m.revenue ? (opInc / m.revenue * 100).toFixed(2) + "%" : "—";
+    return `<h3>Profit Margins — Detail</h3>${sub}
+      <table class="bridge">
+        <tr><td>Gross margin</td><td>${m.grossMargin == null ? "—" : m.grossMargin.toFixed(2) + "%"}</td></tr>
+        <tr><td>Operating margin</td><td>${opMargin}</td></tr>
+        <tr><td>Net margin</td><td>${m.netMargin == null ? "—" : m.netMargin.toFixed(2) + "%"}</td></tr>
+      </table>
+      <h4>Underlying figures</h4>
+      <table class="bridge">
+        <tr><td>Revenue</td><td>${fmtMoney(m.revenue)}</td></tr>
+        <tr><td>Gross profit</td><td>${fmtMoney(m.grossProfit)}</td></tr>
+        <tr><td>Net income</td><td class="${(m.netIncome || 0) >= 0 ? "pos" : "neg"}">${fmtMoney(m.netIncome)}</td></tr>
+      </table>`;
+  }
+
+  if (kind === "cash") {
+    return `<h3>Cash Balances — Detail</h3>${sub}
+      <h4>By account</h4>
+      <table class="bridge">
+        ${pctShareRows(m.bankAccounts, m.cash)}
+        <tr class="res"><td>Total cash in bank</td><td>${fmtMoney(m.cash)}</td></tr>
+      </table>`;
+  }
+
+  if (kind === "debt") {
+    const all = m.loans.concat(m.creditCards);
+    const bars = all.length ? hbarSvg(all, { rowH: 30, color: "#e8564f" }) : "<p class='empty'>No debt on file</p>";
+    return `<h3>Debt Summary — Detail</h3>${sub}
+      <h4>Share of total debt</h4>
+      <table class="bridge">
+        ${pctShareRows(all, m.debtTotal)}
+        <tr class="res"><td>Total debt</td><td class="neg">${fmtMoney(m.debtTotal)}</td></tr>
+      </table>
+      <h4>Compared</h4>${bars}`;
+  }
+
+  if (kind === "arap") {
+    const net = (m.ar || 0) - (m.ap || 0);
+    return `<h3>Receivables &amp; Payables — Detail</h3>${sub}
+      <table class="bridge">
+        <tr><td>Accounts receivable</td><td>${fmtMoney(m.ar)}</td></tr>
+        <tr><td>Accounts payable</td><td>${fmtMoney(m.ap)}</td></tr>
+        <tr class="res"><td>Net position</td><td class="${net >= 0 ? "pos" : "neg"}">${fmtMoney(net)}</td></tr>
+      </table>`;
+  }
+  return "";
+}
+
+function openDetail(kind) {
+  if (!currentMetrics) return;
+  document.getElementById("modal-content").innerHTML = detailHTML(kind, currentMetrics);
+  document.getElementById("modal").hidden = false;
+}
+
+document.getElementById("grid").addEventListener("click", e => {
+  const card = e.target.closest("[data-detail]");
+  if (card) openDetail(card.dataset.detail);
+});
+document.getElementById("modal-close").addEventListener("click", () => {
+  document.getElementById("modal").hidden = true;
+});
+document.getElementById("modal").addEventListener("click", e => {
+  if (e.target.id === "modal") document.getElementById("modal").hidden = true;
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.getElementById("modal").hidden = true;
+});
 
 /* ================= File handling UI ================= */
 
