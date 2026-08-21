@@ -30,6 +30,13 @@
   .filetag .role.ok { color:var(--green); font-weight:600; }
   #status { margin-top:14px; font-size:13px; color:var(--muted); min-height:20px; }
   #status.err { color:var(--red); font-weight:600; }
+  .qbo-btn { margin-top:16px; background:#2ca01c; border:none; border-radius:6px;
+             padding:9px 18px; font:inherit; font-size:12.5px; font-weight:600;
+             color:#fff; cursor:pointer; }
+  .qbo-btn:hover { background:#268e19; }
+  .qbo-btn:disabled { opacity:.5; cursor:default; }
+  .qb-meta { margin-top:10px; font-size:11.5px; color:var(--muted); }
+  .qb-meta a { color:var(--teal); }
 
   /* ---- Dashboard ---- */
   #dashboard { display:none; }
@@ -120,6 +127,8 @@
     <input type="file" id="fileinput" accept=".csv,text/csv" multiple hidden>
     <div id="filelist"></div>
     <div id="status"></div>
+    <button id="btn-qbo" type="button" class="qbo-btn">Load QuickBooks Data</button>
+    <div id="qb-meta" class="qb-meta"></div>
   </div>
 
   <div id="modal" hidden>
@@ -141,6 +150,12 @@
 
 <script>
 "use strict";
+
+// The QuickBooks snapshot committed by the GitHub Actions workflow.
+const QB_DATA_URL = "data/reports.json";
+// Your repo's Actions page for the sync workflow — where "pull fresh data"
+// happens with one click. Replace USERNAME/REPO with yours.
+const QB_SYNC_URL = "https://github.com/choudharyarnav356-lgtm/QuickBooks-CSV-report-generator/actions/workflows/quickbooks-sync.yml";
 
 /* ================= CSV parsing ================= */
 
@@ -785,6 +800,53 @@ function maybeRender() {
   else if (pending.arAging || pending.apAging) setStatus("Aging loaded \u2014 now add the Balance Sheet and Profit & Loss CSVs.");
   else setStatus("Neither file was recognized as a QuickBooks Balance Sheet or Profit & Loss export.", true);
 }
+
+/* ================= QuickBooks snapshot loading ================= */
+
+async function loadQuickBooksSnapshot() {
+  const btn = document.getElementById("btn-qbo");
+  btn.disabled = true;
+  setStatus("Loading QuickBooks data\u2026");
+  try {
+    // Cache-bust so a freshly committed snapshot is picked up immediately.
+    const res = await fetch(QB_DATA_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error(res.status === 404
+      ? "No snapshot found yet \u2014 run the sync workflow once (link below)."
+      : "Fetch failed (" + res.status + ")");
+    const data = await res.json();
+
+    pending.bs = data.bs;
+    pending.pl = data.pl;
+    pending.arAging = data.arAging;
+    pending.apAging = data.apAging;
+
+    const when = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "unknown time";
+    showFileTag("QuickBooks \u2014 " + (data.company || "connected company"), "Synced " + when + " \u2713");
+    setStatus("");
+    maybeRender();
+  } catch (e) {
+    setStatus("Couldn't load QuickBooks data: " + e.message, true);
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("btn-qbo").addEventListener("click", loadQuickBooksSnapshot);
+
+// Show when the current snapshot was taken, plus the one-click re-sync link.
+(async function showSnapshotMeta() {
+  const meta = document.getElementById("qb-meta");
+  const syncLink = QB_SYNC_URL.includes("USERNAME/REPO") ? "" :
+    ' \u00b7 <a href="' + QB_SYNC_URL + '" target="_blank" rel="noopener">Pull fresh from QuickBooks</a>';
+  try {
+    const res = await fetch(QB_DATA_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const when = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "unknown";
+    meta.innerHTML = "Snapshot from " + esc(when) + syncLink;
+  } catch (e) {
+    meta.innerHTML = "No QuickBooks snapshot yet" + syncLink;
+  }
+})();
 
 dropzone.addEventListener("click", () => fileinput.click());
 dropzone.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") fileinput.click(); });
