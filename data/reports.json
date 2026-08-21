@@ -1,0 +1,643 @@
+{
+  "generatedAt": "2026-08-21T04:08:17.492Z",
+  "company": "Sandbox Company US 7c70",
+  "bs": {
+    "meta": {
+      "company": "Sandbox Company US 7c70",
+      "report": "BalanceSheet",
+      "period": "2026-01-01 to 2026-08-20"
+    },
+    "rows": [
+      [
+        "ASSETS",
+        null
+      ],
+      [
+        "Current Assets",
+        null
+      ],
+      [
+        "Bank Accounts",
+        null
+      ],
+      [
+        "Checking",
+        1201
+      ],
+      [
+        "Savings",
+        800
+      ],
+      [
+        "Total for Total Bank Accounts",
+        2001
+      ],
+      [
+        "Accounts Receivable",
+        null
+      ],
+      [
+        "Accounts Receivable (A/R)",
+        5281.52
+      ],
+      [
+        "Total for Total Accounts Receivable",
+        5281.52
+      ],
+      [
+        "Other Current Assets",
+        null
+      ],
+      [
+        "Inventory Asset",
+        596.25
+      ],
+      [
+        "Undeposited Funds",
+        2062.52
+      ],
+      [
+        "Total for Total Other Current Assets",
+        2658.77
+      ],
+      [
+        "Total for Total Current Assets",
+        9941.29
+      ],
+      [
+        "Fixed Assets",
+        null
+      ],
+      [
+        "Truck",
+        null
+      ],
+      [
+        "Original Cost",
+        13495
+      ],
+      [
+        "Total for Total Truck",
+        13495
+      ],
+      [
+        "Total for Total Fixed Assets",
+        13495
+      ],
+      [
+        "Total for TOTAL ASSETS",
+        23436.29
+      ],
+      [
+        "LIABILITIES AND EQUITY",
+        null
+      ],
+      [
+        "Liabilities",
+        null
+      ],
+      [
+        "Current Liabilities",
+        null
+      ],
+      [
+        "Accounts Payable",
+        null
+      ],
+      [
+        "Accounts Payable (A/P)",
+        1602.67
+      ],
+      [
+        "Total for Total Accounts Payable",
+        1602.67
+      ],
+      [
+        "Credit Cards",
+        null
+      ],
+      [
+        "Mastercard",
+        157.72
+      ],
+      [
+        "Total for Total Credit Cards",
+        157.72
+      ],
+      [
+        "Other Current Liabilities",
+        null
+      ],
+      [
+        "Arizona Dept. of Revenue Payable",
+        0
+      ],
+      [
+        "Board of Equalization Payable",
+        370.94
+      ],
+      [
+        "Loan Payable",
+        4000
+      ],
+      [
+        "Total for Total Other Current Liabilities",
+        4370.94
+      ],
+      [
+        "Total for Total Current Liabilities",
+        6131.33
+      ],
+      [
+        "Long-Term Liabilities",
+        null
+      ],
+      [
+        "Notes Payable",
+        25000
+      ],
+      [
+        "Total for Total Long-Term Liabilities",
+        25000
+      ],
+      [
+        "Total for Total Liabilities",
+        31131.33
+      ],
+      [
+        "Equity",
+        null
+      ],
+      [
+        "Opening Balance Equity",
+        -9337.5
+      ],
+      [
+        "Retained Earnings",
+        null
+      ],
+      [
+        "Net Income",
+        1642.46
+      ],
+      [
+        "Total for Total Equity",
+        -7695.04
+      ],
+      [
+        "Total for TOTAL LIABILITIES AND EQUITY",
+        23436.29
+      ]
+    ],
+    "totals": {
+      "Total Bank Accounts": 2001,
+      "Total Accounts Receivable": 5281.52,
+      "Total Other Current Assets": 2658.77,
+      "Total Current Assets": 9941.29,
+      "Total Truck": 13495,
+      "Total Fixed Assets": 13495,
+      "TOTAL ASSETS": 23436.29,
+      "Total Accounts Payable": 1602.67,
+      "Total Credit Cards": 157.72,
+      "Total Other Current Liabilities": 4370.94,
+      "Total Current Liabilities": 6131.33,
+      "Total Long-Term Liabilities": 25000,
+      "Total Liabilities": 31131.33,
+      "Total Equity": -7695.04,
+      "TOTAL LIABILITIES AND EQUITY": 23436.29
+    }
+  },
+  "pl": {
+    "meta": {
+      "company": "Sandbox Company US 7c70",
+      "report": "ProfitAndLoss",
+      "period": "2026-01-01 to 2026-08-20"
+    },
+    "rows": [
+      [
+        "Income",
+        null
+      ],
+      [
+        "Design income",
+        2250
+      ],
+      [
+        "Discounts given",
+        -89.5
+      ],
+      [
+        "Landscaping Services",
+        null
+      ],
+      [
+        "Job Materials",
+        null
+      ],
+      [
+        "Fountains and Garden Lighting",
+        2246.5
+      ],
+      [
+        "Plants and Soil",
+        2351.97
+      ],
+      [
+        "Sprinklers and Drip Systems",
+        138
+      ],
+      [
+        "Total for Total Job Materials",
+        4736.47
+      ],
+      [
+        "Labor",
+        null
+      ],
+      [
+        "Installation",
+        250
+      ],
+      [
+        "Maintenance and Repair",
+        50
+      ],
+      [
+        "Total for Total Labor",
+        300
+      ],
+      [
+        "Total for Total Landscaping Services",
+        6513.97
+      ],
+      [
+        "Pest Control Services",
+        110
+      ],
+      [
+        "Sales of Product Income",
+        912.75
+      ],
+      [
+        "Services",
+        503.55
+      ],
+      [
+        "Total for Total Income",
+        10200.77
+      ],
+      [
+        "Cost of Goods Sold",
+        null
+      ],
+      [
+        "Cost of Goods Sold",
+        405
+      ],
+      [
+        "Total for Total Cost of Goods Sold",
+        405
+      ],
+      [
+        "Total for Gross Profit",
+        9795.77
+      ],
+      [
+        "Expenses",
+        null
+      ],
+      [
+        "Advertising",
+        74.86
+      ],
+      [
+        "Automobile",
+        null
+      ],
+      [
+        "Fuel",
+        349.41
+      ],
+      [
+        "Total for Total Automobile",
+        463.37
+      ],
+      [
+        "Equipment Rental",
+        112
+      ],
+      [
+        "Insurance",
+        241.23
+      ],
+      [
+        "Job Expenses",
+        null
+      ],
+      [
+        "Job Materials",
+        null
+      ],
+      [
+        "Decks and Patios",
+        234.04
+      ],
+      [
+        "Plants and Soil",
+        353.12
+      ],
+      [
+        "Sprinklers and Drip Systems",
+        215.66
+      ],
+      [
+        "Total for Total Job Materials",
+        802.82
+      ],
+      [
+        "Total for Total Job Expenses",
+        957.89
+      ],
+      [
+        "Legal & Professional Fees",
+        null
+      ],
+      [
+        "Accounting",
+        640
+      ],
+      [
+        "Bookkeeper",
+        55
+      ],
+      [
+        "Lawyer",
+        400
+      ],
+      [
+        "Total for Total Legal & Professional Fees",
+        1170
+      ],
+      [
+        "Maintenance and Repair",
+        null
+      ],
+      [
+        "Equipment Repairs",
+        755
+      ],
+      [
+        "Total for Total Maintenance and Repair",
+        940
+      ],
+      [
+        "Meals and Entertainment",
+        28.49
+      ],
+      [
+        "Office Expenses",
+        18.08
+      ],
+      [
+        "Rent or Lease",
+        900
+      ],
+      [
+        "Utilities",
+        null
+      ],
+      [
+        "Gas and Electric",
+        200.53
+      ],
+      [
+        "Telephone",
+        130.86
+      ],
+      [
+        "Total for Total Utilities",
+        331.39
+      ],
+      [
+        "Total for Total Expenses",
+        5237.31
+      ],
+      [
+        "Total for Net Operating Income",
+        4558.46
+      ],
+      [
+        "Other Expenses",
+        null
+      ],
+      [
+        "Miscellaneous",
+        2916
+      ],
+      [
+        "Total for Total Other Expenses",
+        2916
+      ],
+      [
+        "Total for Net Other Income",
+        -2916
+      ],
+      [
+        "Total for Net Income",
+        1642.46
+      ]
+    ],
+    "totals": {
+      "Total Job Materials": 802.82,
+      "Total Labor": 300,
+      "Total Landscaping Services": 6513.97,
+      "Total Income": 10200.77,
+      "Total Cost of Goods Sold": 405,
+      "Gross Profit": 9795.77,
+      "Total Automobile": 463.37,
+      "Total Job Expenses": 957.89,
+      "Total Legal & Professional Fees": 1170,
+      "Total Maintenance and Repair": 940,
+      "Total Utilities": 331.39,
+      "Total Expenses": 5237.31,
+      "Net Operating Income": 4558.46,
+      "Total Other Expenses": 2916,
+      "Net Other Income": -2916,
+      "Net Income": 1642.46
+    }
+  },
+  "arAging": {
+    "meta": {
+      "company": "Sandbox Company US 7c70",
+      "report": "AgedReceivables",
+      "period": "2026-08-20T21:08:17-07:00"
+    },
+    "buckets": [
+      [
+        "Current",
+        0
+      ],
+      [
+        "1 - 30",
+        4884.52
+      ],
+      [
+        "31 - 60",
+        241
+      ],
+      [
+        "61 - 90",
+        156
+      ],
+      [
+        "91 and over",
+        0
+      ]
+    ],
+    "total": 5281.52,
+    "entities": [
+      [
+        "Amy's Bird Sanctuary",
+        239,
+        239
+      ],
+      [
+        "Bill's Windsurf Shop",
+        85,
+        85
+      ],
+      [
+        "0969 Ocean View Road",
+        477.5,
+        477.5
+      ],
+      [
+        "55 Twin Lane",
+        85,
+        85
+      ],
+      [
+        "Geeta Kalapatapu",
+        629.1,
+        629.1
+      ],
+      [
+        "Jeff's Jalopies",
+        81,
+        81
+      ],
+      [
+        "John Melton",
+        450,
+        450
+      ],
+      [
+        "Kookies by Kathy",
+        75,
+        75
+      ],
+      [
+        "Mark Cho",
+        314.28,
+        314.28
+      ],
+      [
+        "Paulsen Medical Supplies",
+        954.75,
+        954.75
+      ],
+      [
+        "Red Rock Diner",
+        226,
+        226
+      ],
+      [
+        "Rondonuwu Fruit and Vegi",
+        78.6,
+        78.6
+      ],
+      [
+        "Barnett Design",
+        274.5,
+        274.5
+      ],
+      [
+        "Sonnenschein Family Store",
+        362.07,
+        362.07
+      ],
+      [
+        "Sushi by Katsuyuki",
+        160,
+        160
+      ],
+      [
+        "Travis Waldron",
+        414.72,
+        414.72
+      ],
+      [
+        "Weiskopf Consulting",
+        375,
+        375
+      ]
+    ]
+  },
+  "apAging": {
+    "meta": {
+      "company": "Sandbox Company US 7c70",
+      "report": "AgedPayables",
+      "period": "2026-08-20T21:08:17-07:00"
+    },
+    "buckets": [
+      [
+        "Current",
+        0
+      ],
+      [
+        "1 - 30",
+        755
+      ],
+      [
+        "31 - 60",
+        847.67
+      ],
+      [
+        "61 - 90",
+        0
+      ],
+      [
+        "91 and over",
+        0
+      ]
+    ],
+    "total": 1602.67,
+    "entities": [
+      [
+        "Brosnahan Insurance Agency",
+        241.23,
+        241.23
+      ],
+      [
+        "Diego's Road Warrior Bodyshop",
+        755,
+        755
+      ],
+      [
+        "Norton Lumber and Building Materials",
+        205,
+        205
+      ],
+      [
+        "PG&E",
+        86.44,
+        86.44
+      ],
+      [
+        "Robertson & Associates",
+        315,
+        315
+      ]
+    ]
+  }
+}
