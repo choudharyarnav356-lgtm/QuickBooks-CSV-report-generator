@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T04:08:17.492Z",
+  "generatedAt": "2026-08-21T04:33:43.536Z",
   "company": "Sandbox Company US 7c70",
   "bs": {
     "meta": {
@@ -29,7 +29,7 @@
         800
       ],
       [
-        "Total for Total Bank Accounts",
+        "Total for Bank Accounts",
         2001
       ],
       [
@@ -41,7 +41,7 @@
         5281.52
       ],
       [
-        "Total for Total Accounts Receivable",
+        "Total for Accounts Receivable",
         5281.52
       ],
       [
@@ -57,11 +57,11 @@
         2062.52
       ],
       [
-        "Total for Total Other Current Assets",
+        "Total for Other Current Assets",
         2658.77
       ],
       [
-        "Total for Total Current Assets",
+        "Total for Current Assets",
         9941.29
       ],
       [
@@ -77,15 +77,15 @@
         13495
       ],
       [
-        "Total for Total Truck",
+        "Total for Truck",
         13495
       ],
       [
-        "Total for Total Fixed Assets",
+        "Total for Fixed Assets",
         13495
       ],
       [
-        "Total for TOTAL ASSETS",
+        "Total for ASSETS",
         23436.29
       ],
       [
@@ -109,7 +109,7 @@
         1602.67
       ],
       [
-        "Total for Total Accounts Payable",
+        "Total for Accounts Payable",
         1602.67
       ],
       [
@@ -121,7 +121,7 @@
         157.72
       ],
       [
-        "Total for Total Credit Cards",
+        "Total for Credit Cards",
         157.72
       ],
       [
@@ -141,11 +141,11 @@
         4000
       ],
       [
-        "Total for Total Other Current Liabilities",
+        "Total for Other Current Liabilities",
         4370.94
       ],
       [
-        "Total for Total Current Liabilities",
+        "Total for Current Liabilities",
         6131.33
       ],
       [
@@ -157,11 +157,11 @@
         25000
       ],
       [
-        "Total for Total Long-Term Liabilities",
+        "Total for Long-Term Liabilities",
         25000
       ],
       [
-        "Total for Total Liabilities",
+        "Total for Liabilities",
         31131.33
       ],
       [
@@ -181,30 +181,30 @@
         1642.46
       ],
       [
-        "Total for Total Equity",
+        "Total for Equity",
         -7695.04
       ],
       [
-        "Total for TOTAL LIABILITIES AND EQUITY",
+        "Total for LIABILITIES AND EQUITY",
         23436.29
       ]
     ],
     "totals": {
-      "Total Bank Accounts": 2001,
-      "Total Accounts Receivable": 5281.52,
-      "Total Other Current Assets": 2658.77,
-      "Total Current Assets": 9941.29,
-      "Total Truck": 13495,
-      "Total Fixed Assets": 13495,
-      "TOTAL ASSETS": 23436.29,
-      "Total Accounts Payable": 1602.67,
-      "Total Credit Cards": 157.72,
-      "Total Other Current Liabilities": 4370.94,
-      "Total Current Liabilities": 6131.33,
-      "Total Long-Term Liabilities": 25000,
-      "Total Liabilities": 31131.33,
-      "Total Equity": -7695.04,
-      "TOTAL LIABILITIES AND EQUITY": 23436.29
+      "Bank Accounts": 2001,
+      "Accounts Receivable": 5281.52,
+      "Other Current Assets": 2658.77,
+      "Current Assets": 9941.29,
+      "Truck": 13495,
+      "Fixed Assets": 13495,
+      "ASSETS": 23436.29,
+      "Accounts Payable": 1602.67,
+      "Credit Cards": 157.72,
+      "Other Current Liabilities": 4370.94,
+      "Current Liabilities": 6131.33,
+      "Long-Term Liabilities": 25000,
+      "Liabilities": 31131.33,
+      "Equity": -7695.04,
+      "LIABILITIES AND EQUITY": 23436.29
     }
   },
   "pl": {
@@ -247,7 +247,7 @@
         138
       ],
       [
-        "Total for Total Job Materials",
+        "Total for Job Materials",
         4736.47
       ],
       [
@@ -263,11 +263,11 @@
         50
       ],
       [
-        "Total for Total Labor",
+        "Total for Labor",
         300
       ],
       [
-        "Total for Total Landscaping Services",
+        "Total for Landscaping Services",
         6513.97
       ],
       [
@@ -283,7 +283,7 @@
         503.55
       ],
       [
-        "Total for Total Income",
+        "Total for Income",
         10200.77
       ],
       [
@@ -295,11 +295,11 @@
         405
       ],
       [
-        "Total for Total Cost of Goods Sold",
+        "Total for Cost of Goods Sold",
         405
       ],
       [
-        "Total for Gross Profit",
+        "Gross Profit",
         9795.77
       ],
       [
@@ -319,7 +319,7 @@
         349.41
       ],
       [
-        "Total for Total Automobile",
+        "Total for Automobile",
         463.37
       ],
       [
@@ -351,11 +351,11 @@
         215.66
       ],
       [
-        "Total for Total Job Materials",
+        "Total for Job Materials",
         802.82
       ],
       [
-        "Total for Total Job Expenses",
+        "Total for Job Expenses",
         957.89
       ],
       [
@@ -375,7 +375,7 @@
         400
       ],
       [
-        "Total for Total Legal & Professional Fees",
+        "Total for Legal & Professional Fees",
         1170
       ],
       [
@@ -387,7 +387,7 @@
         755
       ],
       [
-        "Total for Total Maintenance and Repair",
+        "Total for Maintenance and Repair",
         940
       ],
       [
@@ -415,15 +415,15 @@
         130.86
       ],
       [
-        "Total for Total Utilities",
+        "Total for Utilities",
         331.39
       ],
       [
-        "Total for Total Expenses",
+        "Total for Expenses",
         5237.31
       ],
       [
-        "Total for Net Operating Income",
+        "Net Operating Income",
         4558.46
       ],
       [
@@ -435,42 +435,38 @@
         2916
       ],
       [
-        "Total for Total Other Expenses",
+        "Total for Other Expenses",
         2916
       ],
       [
-        "Total for Net Other Income",
+        "Net Other Income",
         -2916
       ],
       [
-        "Total for Net Income",
+        "Net Income",
         1642.46
       ]
     ],
     "totals": {
-      "Total Job Materials": 802.82,
-      "Total Labor": 300,
-      "Total Landscaping Services": 6513.97,
-      "Total Income": 10200.77,
-      "Total Cost of Goods Sold": 405,
-      "Gross Profit": 9795.77,
-      "Total Automobile": 463.37,
-      "Total Job Expenses": 957.89,
-      "Total Legal & Professional Fees": 1170,
-      "Total Maintenance and Repair": 940,
-      "Total Utilities": 331.39,
-      "Total Expenses": 5237.31,
-      "Net Operating Income": 4558.46,
-      "Total Other Expenses": 2916,
-      "Net Other Income": -2916,
-      "Net Income": 1642.46
+      "Job Materials": 802.82,
+      "Labor": 300,
+      "Landscaping Services": 6513.97,
+      "Income": 10200.77,
+      "Cost of Goods Sold": 405,
+      "Automobile": 463.37,
+      "Job Expenses": 957.89,
+      "Legal & Professional Fees": 1170,
+      "Maintenance and Repair": 940,
+      "Utilities": 331.39,
+      "Expenses": 5237.31,
+      "Other Expenses": 2916
     }
   },
   "arAging": {
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "AgedReceivables",
-      "period": "2026-08-20T21:08:17-07:00"
+      "period": "2026-08-20T21:33:43-07:00"
     },
     "buckets": [
       [
@@ -587,7 +583,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "AgedPayables",
-      "period": "2026-08-20T21:08:17-07:00"
+      "period": "2026-08-20T21:33:43-07:00"
     },
     "buckets": [
       [
