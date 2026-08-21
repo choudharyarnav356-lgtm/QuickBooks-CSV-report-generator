@@ -1,1 +1,59 @@
+name: Sync QuickBooks data
+
+on:
+  # Run manually from the Actions tab ("Run workflow" button) — this is the
+  # "pull fresh data" trigger.
+  workflow_dispatch:
+  # Also run automatically every day. Keeping this on does double duty:
+  # data stays reasonably fresh, AND the daily token refresh keeps Intuit's
+  # refresh token alive forever (they only expire after 100 days of NON-use).
+  schedule:
+    - cron: "17 11 * * *"
+
+permissions:
+  contents: write   # lets the workflow commit data/reports.json back
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Fetch reports from QuickBooks
+        env:
+          QB_CLIENT_ID: ${{ secrets.QB_CLIENT_ID }}
+          QB_CLIENT_SECRET: ${{ secrets.QB_CLIENT_SECRET }}
+          QB_REFRESH_TOKEN: ${{ secrets.QB_REFRESH_TOKEN }}
+          QB_REALM_ID: ${{ secrets.QB_REALM_ID }}
+          QB_ENVIRONMENT: sandbox
+        run: node scripts/fetch-quickbooks.js
+
+      # Intuit rotates the refresh token on every use. Save the new one back
+      # into this repo's secrets so the next run works — this is what makes
+      # the whole setup hands-off after the one-time setup.
+      - name: Save rotated refresh token
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -s .new_refresh_token ]; then
+            gh secret set QB_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" --body "$(cat .new_refresh_token)"
+            rm -f .new_refresh_token
+            echo "Refresh token rotated and saved."
+          fi
+
+      - name: Commit updated snapshot
+        run: |
+          git config user.name "quickbooks-sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reports.json
+          if git diff --cached --quiet; then
+            echo "No changes in QuickBooks data — nothing to commit."
+          else
+            git commit -m "Update QuickBooks data snapshot"
+            git push
+          fi
 
