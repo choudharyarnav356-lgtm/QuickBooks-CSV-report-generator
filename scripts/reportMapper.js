@@ -33,12 +33,28 @@ function flattenRows(rowArray, out) {
 
     if (row.Rows && row.Rows.Row) flattenRows(row.Rows.Row, out);
 
-    if (row.Summary && row.Summary.ColData) {
-      // The closing "Total for X" line QuickBooks always prints after a section.
-      const name = row.Summary.ColData[0].value.replace(/^Total for\s+/i, "").trim()
-        || (row.Header ? row.Header.ColData[0].value : "");
+    if (row.Summary && row.Summary.ColData && row.Summary.ColData.length) {
+      // The section's closing total line. The CSV export writes these as
+      // "Total for Bank Accounts", but the live API writes "Total Bank
+      // Accounts" (no "for") — and standalone computed lines like
+      // "Gross Profit" / "Net Income" arrive as Summary rows with no
+      // "Total" prefix at all. Normalize all three cases so the output
+      // matches the CSV parser's shape exactly.
+      const rawLabel = (row.Summary.ColData[0].value || "").trim();
       const value = toNumber(row.Summary.ColData[row.Summary.ColData.length - 1].value);
-      out.push([`Total for ${name}`, value]);
+      const headerName = (row.Header && row.Header.ColData && row.Header.ColData.length)
+        ? row.Header.ColData[0].value : null;
+      const m = rawLabel.match(/^total(?:\s+for)?\s+(.+)$/i);
+      if (headerName) {
+        // Safest source of the section's name is its own header.
+        out.push([`Total for ${headerName}`, value]);
+      } else if (m) {
+        out.push([`Total for ${m[1].trim()}`, value]);
+      } else {
+        // Not a total at all — a computed line like "Gross Profit" or
+        // "Net Income". Keep it as a plain data row.
+        out.push([rawLabel, value]);
+      }
     }
   }
 }
