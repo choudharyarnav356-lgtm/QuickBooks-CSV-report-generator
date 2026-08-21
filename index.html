@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickBooks Financial Dashboard</title>
+<style>
+  :root {
+    --bg:#eef1f4; --card:#ffffff; --line:#e3e7ec; --ink:#2f3640; --muted:#8a94a0;
+    --teal:#0e7d6d; --green:#37b06a; --red:#e8564f;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--ink);
+         font:14px/1.45 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+         min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .wrap { width:100%; max-width:1220px; }
+
+  /*======= Upload screen =========*/
+  #uploader { max-width:560px; margin:0 auto; text-align:center; }
+  #uploader h1 { font-size:20px; color:var(--teal); margin-bottom:22px; }
+  #dropzone { background:var(--card); border:2px dashed #b9c2cc; border-radius:10px;
+              padding:44px 24px; cursor:pointer; transition:border-color .15s, background .15s; }
+  #dropzone.hover { border-color:var(--teal); background:#f2faf8; }
+  #dropzone .icon { font-size:34px; margin-bottom:10px; }
+  #dropzone strong { color:var(--teal); }
+  #filelist { margin-top:16px; text-align:left; }
+  .filetag { display:flex; justify-content:space-between; background:var(--card);
+             border:1px solid var(--line); border-radius:6px; padding:9px 14px; margin-top:8px; font-size:13px; }
+  .filetag .role { color:var(--muted); }
+  .filetag .role.ok { color:var(--green); font-weight:600; }
+  #status { margin-top:14px; font-size:13px; color:var(--muted); min-height:20px; }
+  #status.err { color:var(--red); font-weight:600; }
+  .qbo-btn { margin-top:16px; background:#2ca01c; border:none; border-radius:6px;
+             padding:9px 18px; font:inherit; font-size:12.5px; font-weight:600;
+             color:#fff; cursor:pointer; }
+  .qbo-btn:hover { background:#268e19; }
+  .qbo-btn:disabled { opacity:.5; cursor:default; }
+  .qb-meta { margin-top:10px; font-size:11.5px; color:var(--muted); }
+  .qb-meta a { color:var(--teal); }
+
+  /* ---- Dashboard ---- */
+  #dashboard { display:none; }
+  .toolbar { display:flex; justify-content:flex-end; gap:10px; margin-bottom:12px; }
+  .toolbar button { background:var(--card); border:1px solid var(--line); border-radius:6px;
+                    padding:7px 14px; font:inherit; font-size:12.5px; color:var(--ink); cursor:pointer; }
+  .toolbar button:hover { border-color:var(--teal); color:var(--teal); }
+  .grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:16px; align-items:stretch; }
+  .card { grid-column:span 2; background:var(--card); border:1px solid var(--line); border-radius:8px;
+          padding:20px 22px; display:flex; flex-direction:column; }
+  .card.wide { grid-column:span 3; }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns:1fr; }
+    .card, .card.wide { grid-column:auto; }
+    .wrap { max-width:460px; }
+  }
+  .card h2 { font-size:13px; font-weight:600; margin-bottom:2px; }
+  .card .period { font-size:11px; color:var(--muted); margin-bottom:14px; }
+  .body { flex:1; display:flex; flex-direction:column; justify-content:center; gap:20px; }
+  .duo { display:flex; gap:14px; }
+  .duo .mini { flex:1; min-width:0; border:1px solid var(--line); border-radius:6px;
+               padding:12px 10px; text-align:center; }
+  .mini .v { font-size:17px; font-weight:700; white-space:nowrap; }
+  .mini .k { font-size:11px; color:var(--muted); margin-top:3px; }
+  .pos { color:var(--green); } .neg { color:var(--red); }
+  .gauges { flex:1; display:flex; gap:14px; text-align:center; align-items:center; justify-content:center; }
+  .gauges > div { flex:1; min-width:0; }
+  .gauge { width:100%; max-width:200px; margin:0 auto; }
+  .gauge-pct { font-size:15px; font-weight:700; fill:var(--ink); }
+  .gauge-label { color:var(--muted); font-size:12px; margin-top:6px; }
+  .gauge-value { font-size:19px; font-weight:700; white-space:nowrap; }
+  .hbar { width:100%; }
+  .hb-name { font-size:11px; fill:var(--ink); }
+  .hb-val { font-size:11px; fill:var(--muted); }
+  table.stats { width:100%; border-collapse:collapse; }
+  .stats td { padding:8px 0; border-top:1px solid var(--line); font-size:13px; }
+  .stats td:last-child { text-align:right; font-weight:600; white-space:nowrap; }
+  .stats tr.sec td { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase;
+                     letter-spacing:.5px; padding-top:12px; padding-bottom:2px; border-top:none; }
+  .stats tr.tot td { font-weight:700; }
+  .empty { color:var(--muted); font-size:12px; }
+
+  /* ---- Detail modal (experimental drill-down) ---- */
+  .card[data-detail] { cursor:pointer; transition:border-color .12s, box-shadow .12s; }
+  .card[data-detail]:hover { border-color:var(--teal); box-shadow:0 2px 10px rgba(14,125,109,.10); }
+  .hint { font-size:10.5px; color:var(--muted); text-align:right; margin-top:10px; }
+  #modal { position:fixed; inset:0; background:rgba(30,36,42,.45); display:flex;
+           align-items:center; justify-content:center; padding:20px; z-index:50; }
+  #modal[hidden] { display:none; }
+  #modal-box { background:var(--card); border-radius:10px; max-width:560px; width:100%;
+               max-height:85vh; overflow:auto; padding:22px 24px; position:relative;
+               box-shadow:0 10px 40px rgba(0,0,0,.22); }
+  #modal-close { position:absolute; top:10px; right:12px; border:none; background:none;
+                 font-size:20px; color:var(--muted); cursor:pointer; line-height:1; }
+  #modal-close:hover { color:var(--ink); }
+  #modal-box h3 { font-size:15px; color:var(--teal); margin-bottom:2px; }
+  #modal-box .msub { font-size:11px; color:var(--muted); margin-bottom:16px; }
+  #modal-box h4 { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase;
+                  letter-spacing:.5px; margin:18px 0 6px; }
+  #modal-box h4:first-of-type { margin-top:0; }
+  .donut-wrap { display:flex; align-items:center; gap:20px; }
+  .donut { width:132px; flex:none; }
+  .dlegend { font-size:12.5px; display:flex; flex-direction:column; gap:5px; }
+  .dl { display:flex; align-items:center; gap:7px; }
+  .dl b { font-weight:600; }
+  .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  table.bridge { width:100%; border-collapse:collapse; }
+  .bridge td { padding:7px 0; border-top:1px solid var(--line); font-size:13px; }
+  .bridge td:last-child { text-align:right; font-weight:600; white-space:nowrap; }
+  .bridge tr.sub td { font-weight:400; color:var(--muted); }
+  .bridge tr.res td { font-weight:700; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .toolbar, #uploader { display:none !important; }
+    .card { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="uploader">
+    <h1>QuickBooks Financial Dashboard</h1>
+    <div id="dropzone" tabindex="0" role="button" aria-label="Choose or drop CSV files">
+      <div class="icon">&#128203;</div>
+      <div><strong>Upload</strong></div>
+    </div>
+    <input type="file" id="fileinput" accept=".csv,text/csv" multiple hidden>
+    <div id="filelist"></div>
+    <div id="status"></div>
+    <button id="btn-qbo" type="button" class="qbo-btn">Load QuickBooks Data</button>
+    <div id="qb-meta" class="qb-meta"></div>
+  </div>
+
+  <div id="modal" hidden>
+    <div id="modal-box">
+      <button id="modal-close" type="button" aria-label="Close">&#10005;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <div id="dashboard">
+    <div class="toolbar">
+      <button id="btn-print" type="button">Print / save as PDF</button>
+      <button id="btn-reset" type="button">Load different files</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+// The QuickBooks snapshot committed by the GitHub Actions workflow.
+const QB_DATA_URL = "data/reports.json";
+// Your repo's Actions page for the sync workflow — where "pull fresh data"
+// happens with one click. Replace USERNAME/REPO with yours.
+const QB_SYNC_URL = "https://github.com/USERNAME/REPO/actions/workflows/quickbooks-sync.yml";
+
+/* ================= CSV parsing ================= */
+
+function parseCsv(text) {
+  const rows = []; let row = [], field = "", inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false;
+      } else field += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); rows.push(row); row = []; field = "";
+    } else field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function toNumber(raw) {
+  if (raw == null) return null;
+  let s = String(raw).trim().replace(/\$/g, "").replace(/,/g, "");
+  if (s === "" || s === "-") return null;
+  const neg = s.startsWith("-") || (s.startsWith("(") && s.endsWith(")"));
+  s = s.replace(/[()\-]/g, "");
+  const v = parseFloat(s);
+  if (isNaN(v)) return null;
+  return neg ? -v : v;
+}
+
+/* ================= QuickBooks report parsing ================= */
+
+function parseQbReport(text) {
+  const raw = parseCsv(text.replace(/^\uFEFF/, ""));
+  const rows = [], header = [];
+  const meta = { company: "", report: "", period: "" };
+  for (const r of raw) {
+    const label = (r[0] || "").trim();
+    const value = r.length > 1 ? toNumber(r[1]) : null;
+    if (!label && value == null) continue;
+    const low = label.toLowerCase();
+    if (low.includes("accrual basis") || low.includes("cash basis")) continue;
+    if (!rows.length && value == null && header.length < 3 &&
+        low !== "total" && !low.startsWith("total for")) { header.push(label); continue; }
+    if (low === "" || low === "total") continue;
+    rows.push([label, value]);
+  }
+  meta.company = header[0] || "";
+  meta.report  = header[1] || "";
+  meta.period  = header[2] || "";
+  const totals = {};
+  for (const [label, value] of rows) {
+    const m = label.match(/^total for (.+)$/i);
+    if (m && value != null) totals[m[1].trim()] = value;
+  }
+  return { meta, rows, totals };
+}
+
+function sectionRows(rows, startLabel, endLabel) {
+  const out = []; let active = false;
+  for (const [label, value] of rows) {
+    const low = label.toLowerCase();
+    if (low === startLabel.toLowerCase()) { active = true; continue; }
+    if (active && low === endLabel.toLowerCase()) break;
+    if (active) out.push([label, value]);
+  }
+  return out;
+}
+
+function topLevelCategories(rows) {
+  const groupNames = new Set();
+  for (const [label] of rows) {
+    const m = label.match(/^total for (.+)$/i);
+    if (m) groupNames.add(m[1].trim().toLowerCase());
+  }
+  const stack = [], result = [];
+  for (const [label, value] of rows) {
+    const m = label.match(/^total for (.+)$/i);
+    if (m) {
+      const name = m[1].trim();
+      if (stack.length && stack[stack.length - 1].toLowerCase() === name.toLowerCase()) {
+        stack.pop();
+        if (!stack.length && value != null) result.push([name, value]);
+      }
+      continue;
+    }
+    if (groupNames.has(label.trim().toLowerCase())) { stack.push(label.trim()); continue; }
+    if (!stack.length && value != null) result.push([label, value]);
+  }
+  return result;
+}
+
+function findRow(rows, ...needles) {
+  for (const [label, value] of rows) {
+    const low = label.toLowerCase();
+    if (needles.every(n => low.includes(n.toLowerCase())) && value != null) return value;
+  }
+  return null;
+}
+
+function parseAgingReport(text) {
+  const raw = parseCsv(text.replace(/^\uFEFF/, ""));
+  const meta = {
+    company: (raw[0]?.[0] || "").trim(),
+    report:  (raw[1]?.[0] || "").trim(),
+    period:  (raw[2]?.[0] || "").trim()
+  };
+  let buckets = null;
+  // entities: [name, total, overdue] per customer/vendor (top level only;
+  // sub-locations roll up into their parent's "Total for" row)
+  const entities = [], stack = [];
+  const groupNames = new Set();
+  for (const r of raw) {
+    const g = (r[0] || "").trim().match(/^total for (.+)$/i);
+    if (g) groupNames.add(g[1].trim().toLowerCase());
+  }
+  for (const r of raw) {
+    const label = (r[0] || "").trim();
+    if (!label) continue;
+    if (label.toUpperCase() === "TOTAL") {
+      buckets = [
+        ["Current",     toNumber(r[1]) || 0],
+        ["1 - 30",      toNumber(r[2]) || 0],
+        ["31 - 60",     toNumber(r[3]) || 0],
+        ["61 - 90",     toNumber(r[4]) || 0],
+        ["91 and over", toNumber(r[5]) || 0]
+      ];
+      break;
+    }
+    const g = label.match(/^total for (.+)$/i);
+    if (g) {
+      const name = g[1].trim();
+      if (stack.length && stack[stack.length - 1].toLowerCase() === name.toLowerCase()) {
+        stack.pop();
+        if (!stack.length) {
+          const total = toNumber(r[6]);
+          if (total) entities.push([name, total, total - (toNumber(r[1]) || 0)]);
+        }
+      }
+      continue;
+    }
+    if (groupNames.has(label.toLowerCase())) { stack.push(label); continue; }
+    if (!stack.length) {
+      const total = toNumber(r[6]);
+      if (total) entities.push([label, total, total - (toNumber(r[1]) || 0)]);
+    }
+  }
+  const total = buckets ? buckets.reduce((s, [, v]) => s + v, 0) : 0;
+  return { meta, buckets, total, entities };
+}
+
+/* ================= Report detection + metrics ================= */
+
+function detectReports(parsedFiles) {
+  let bs = null, pl = null;
+  for (const p of parsedFiles) {
+    const report = p.meta.report.toLowerCase();
+    const labels = new Set(p.rows.map(r => r[0]));
+    if (report.includes("balance sheet") || labels.has("Liabilities and Equity")) bs = p;
+    else if (report.includes("profit and loss") || labels.has("Gross Profit")) pl = p;
+  }
+  return { bs, pl };
+}
+
+function extractMetrics(bs, pl) {
+  const m = {};
+  m.company  = pl.meta.company || bs.meta.company;
+  m.plPeriod = pl.meta.period;
+  m.bsPeriod = bs.meta.period;
+
+  m.ar = bs.totals["Accounts Receivable"] ?? findRow(bs.rows, "accounts receivable (a/r)");
+  m.ap = bs.totals["Accounts Payable"]    ?? findRow(bs.rows, "accounts payable (a/p)");
+  m.cash = bs.totals["Bank Accounts"] ?? null;
+
+  m.revenue  = pl.totals["Income"] ?? null;
+  m.cogs     = pl.totals["Cost of Goods Sold"] ?? 0;
+  m.expenses = pl.totals["Expenses"] ?? null;
+  // "Other Expenses" is a separate QuickBooks section (interest, misc. non-operating
+  // costs) that sits below Net Operating Income. It's not part of COGS or Expenses,
+  // but it IS subtracted before Net Income — so it has to be included here too, or
+  // Revenue minus this total won't match Net Income below it.
+  m.otherExpenses = pl.totals["Other Expenses"] ?? 0;
+  m.grossProfit = findRow(pl.rows, "gross profit");
+  m.netIncome = null;
+  for (const [label, value] of pl.rows)
+    if (label.trim().toLowerCase() === "net income" && value != null) m.netIncome = value;
+
+  if (m.grossProfit == null && m.revenue != null) m.grossProfit = m.revenue - m.cogs;
+  m.grossMargin = m.revenue ? (m.grossProfit / m.revenue * 100) : null;
+  m.netMargin   = m.revenue && m.netIncome != null ? (m.netIncome / m.revenue * 100) : null;
+
+  m.currentAssets = bs.totals["Current Assets"] ?? null;
+  m.currentLiabilities = bs.totals["Current Liabilities"] ?? null;
+  m.undeposited = findRow(bs.rows, "undeposited funds");
+  m.workingCapital = (m.currentAssets != null && m.currentLiabilities != null)
+    ? m.currentAssets - m.currentLiabilities : null;
+  m.currentRatio = m.currentLiabilities ? m.currentAssets / m.currentLiabilities : null;
+  m.quickRatio = m.currentLiabilities
+    ? ((m.cash || 0) + (m.undeposited || 0) + (m.ar || 0)) / m.currentLiabilities : null;
+
+  m.bankAccounts = topLevelCategories(sectionRows(bs.rows, "Bank Accounts", "Total for Bank Accounts"));
+  m.creditCards  = topLevelCategories(sectionRows(bs.rows, "Credit Cards", "Total for Credit Cards"));
+  m.creditTotal  = bs.totals["Credit Cards"] ?? m.creditCards.reduce((s, [, v]) => s + v, 0);
+  const longterm = topLevelCategories(sectionRows(bs.rows, "Long-term Liabilities", "Total for Long-term Liabilities"));
+  const otherCl  = topLevelCategories(sectionRows(bs.rows, "Other Current Liabilities", "Total for Other Current Liabilities"));
+  const currentLoans = otherCl.filter(([k]) => k.toLowerCase().includes("loan"));
+  m.loans = currentLoans.concat(longterm);
+  m.loanTotal = m.loans.reduce((s, [, v]) => s + v, 0);
+  m.debtTotal = m.loanTotal + (m.creditTotal || 0);
+  m.debtItems = currentLoans.map(([k, v]) => [k, v, "Current loan"])
+    .concat(longterm.map(([k, v]) => [k, v, "Long-term loan"]))
+    .concat(m.creditCards.map(([k, v]) => [k, v, "Credit card"]));
+
+  // Detail breakdowns for the drill-down modal
+  m.incomeCategories = topLevelCategories(sectionRows(pl.rows, "Income", "Total for Income"))
+    .filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  m.expenseCategories = topLevelCategories(sectionRows(pl.rows, "Expenses", "Total for Expenses"))
+    .sort((a, b) => b[1] - a[1]);
+  m.otherExpenseItems = topLevelCategories(sectionRows(pl.rows, "Other Expenses", "Total for Other Expenses"));
+  m.netOperatingIncome = findRow(pl.rows, "net operating income");
+  return m;
+}
+
+/* ================= Formatting + SVG builders ================= */
+
+function fmtMoney(v, decimals = 2) {
+  if (v == null) return "\u2014";
+  const sign = v < 0 ? "-" : "";
+  return sign + "$" + Math.abs(v).toLocaleString("en-US",
+    { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function fmtMoneyShort(v) {
+  if (v == null) return "\u2014";
+  const sign = v < 0 ? "-" : "", a = Math.abs(v);
+  if (a >= 1e6) return sign + "$" + (a / 1e6).toFixed(2) + "M";
+  if (a >= 1e4) return sign + "$" + (a / 1e3).toFixed(1) + "K";
+  return sign + "$" + Math.round(a).toLocaleString("en-US");
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function hbarSvg(items, opts = {}) {
+  if (!items.length) return "<p class='empty'>No data</p>";
+  const { color = "#59a14f", width = 380, rowH = 34, colors = null, labelW = 150 } = opts;
+  const vmax = Math.max(...items.map(([, v]) => v)) || 1;
+  const h = rowH * items.length + 6, valW = 84;
+  const barMax = width - labelW - valW - 16;
+  let parts = "";
+  items.forEach(([label, value], i) => {
+    const y = i * rowH + 6;
+    const bw = Math.max(2, Math.min(value / vmax, 1) * barMax);
+    const c = colors ? colors[i] : color;
+    const short = label.length <= 24 ? label : label.slice(0, 23) + "\u2026";
+    parts +=
+      `<text x="${labelW - 8}" y="${y + rowH / 2}" class="hb-name" text-anchor="end" dominant-baseline="middle">${esc(short)}</text>` +
+      `<rect x="${labelW}" y="${(y + rowH * 0.18).toFixed(1)}" width="${bw.toFixed(1)}" height="${(rowH * 0.5).toFixed(1)}" rx="3" fill="${c}"/>` +
+      `<text x="${(labelW + bw + 8).toFixed(1)}" y="${y + rowH / 2}" class="hb-val" dominant-baseline="middle">${fmtMoneyShort(value)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${width} ${h}" class="hbar">${parts}</svg>`;
+}
+
+function gaugeSvg(pct, bigLabel, bigValue, width = 230) {
+  const shown = pct == null ? "\u2014" : pct.toFixed(2) + "%";
+  const p = pct == null ? 0 : Math.max(0, Math.min(100, pct));
+  const cx = width / 2, cy = width * 0.44, r = width * 0.34, stroke = width * 0.115;
+  const pt = (frac, radius) => {
+    const a = Math.PI + Math.PI * frac;
+    return [cx + radius * Math.cos(a), cy + radius * Math.sin(a)];
+  };
+  const arc = (f1, f2, color) => {
+    const [x1, y1] = pt(f1, r), [x2, y2] = pt(f2, r);
+    return `<path d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r.toFixed(2)} ${r.toFixed(2)} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" fill="none" stroke="${color}" stroke-width="${stroke}"/>`;
+  };
+  const [nx, ny] = pt(p / 100, r - stroke * 0.15);
+  const h = cy + stroke * 0.9;
+  return `
+<svg viewBox="0 0 ${width} ${h.toFixed(0)}" class="gauge">
+  ${arc(0, 0.34, "#e8564f")}${arc(0.34, 0.67, "#f4c542")}${arc(0.67, 1, "#37b06a")}
+  <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(2)}" y2="${ny.toFixed(2)}" stroke="#3a3f45" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="${cx}" cy="${cy}" r="6" fill="#3a3f45"/>
+  <text x="${cx}" y="${(cy + stroke * 0.72).toFixed(1)}" class="gauge-pct" text-anchor="middle">${shown}</text>
+</svg>
+<div class="gauge-label">${esc(bigLabel)}</div>
+<div class="gauge-value">${bigValue}</div>`;
+}
+
+function pieSvg(items, opts = {}) {
+  const { size = 140, showZero = false,
+          colors = ["#2ca01c", "#00a6a4", "#7b3ff2", "#0077c5", "#00897b",
+                    "#c9b458", "#e8564f", "#8a94a0"] } = opts;
+  const total = items.reduce((s, [, v]) => s + Math.max(v, 0), 0);
+  if (!total) return "<p class='empty'>No data</p>";
+  const cx = size / 2, cy = size / 2, r = size / 2 - 2;
+  const pt = frac => {
+    const a = 2 * Math.PI * frac - Math.PI / 2;   // start at 12 o'clock, clockwise
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  };
+  let acc = 0, wedges = "", legend = "";
+  items.forEach(([label, value], i) => {
+    const c = colors[i % colors.length];
+    const frac = Math.max(value, 0) / total;
+    if (frac > 0) {
+      if (frac >= 0.999) {
+        // A single-slice pie is just a full circle — an arc path can't close on itself
+        wedges += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}"/>`;
+      } else {
+        const [x1, y1] = pt(acc), [x2, y2] = pt(acc + frac);
+        const largeArc = frac > 0.5 ? 1 : 0;
+        wedges += `<path d="M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z" fill="${c}"/>`;
+      }
+      acc += frac;
+    }
+    if (frac > 0 || showZero)
+      legend += `<div class="dl"><span class="dot" style="background:${c}"></span>${esc(label)}: <b>${fmtMoney(value, 0)}</b></div>`;
+  });
+  return `<div class="donut-wrap"><svg viewBox="0 0 ${size} ${size}" class="donut">${wedges}</svg><div class="dlegend">${legend}</div></div>`;
+}
+
+function topN(items, n) {
+  if (items.length <= n) return items;
+  const head = items.slice(0, n);
+  const rest = items.slice(n).reduce((s, [, v]) => s + v, 0);
+  return rest > 0 ? head.concat([["All other", rest]]) : head;
+}
+
+/* ================= Dashboard rendering ================= */
+
+function renderDashboard(m) {
+  currentMetrics = m;   // keep for the detail modal
+  // Everything Net Income subtracts from Revenue: cost of goods sold, operating
+  // expenses, AND other (non-operating) expenses — so Revenue - totalCosts = Net Income.
+  const totalCosts = (m.cogs || 0) + (m.expenses || 0) + (m.otherExpenses || 0);
+  const arapBars = hbarSvg(
+    [["Accounts Receivable", m.ar || 0], ["Accounts Payable", m.ap || 0]],
+    { color: "#2a9d8f", rowH: 44 });
+  const revExpBars = hbarSvg(
+    [["Revenue", m.revenue || 0], ["Expenses", totalCosts]],
+    { rowH: 44, colors: ["#37b06a", "#e8564f"] });
+  const cashBars = m.bankAccounts.length
+    ? hbarSvg(m.bankAccounts, { color: "#2a9d8f", rowH: 40 })
+    : "<p class='empty'>No bank accounts found</p>";
+  const debtRows = items => items.length
+    ? items.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${fmtMoney(v)}</td></tr>`).join("")
+    : '<tr><td colspan="2" class="empty">None on file</td></tr>';
+  const niClass = (m.netIncome || 0) >= 0 ? "pos" : "neg";
+
+  document.getElementById("grid").innerHTML = `
+    <div class="card" data-detail="debt">
+      <h2>Debt Summary</h2>
+      <div class="period">${esc(m.bsPeriod || "")}</div>
+      <div class="body">
+        <table class="stats">
+          <tr class="sec"><td colspan="2">Loans</td></tr>
+          ${debtRows(m.loans)}
+          <tr class="sec"><td colspan="2">Credit</td></tr>
+          ${debtRows(m.creditCards)}
+          <tr class="tot"><td>Total debt</td><td class="neg">${fmtMoney(m.debtTotal)}</td></tr>
+        </table>
+      </div>
+      <div class="hint">Click for details</div>
+    </div>
+
+    <div class="card" data-detail="pnl">
+      <h2>Revenue &amp; Expenses</h2>
+      <div class="period">${esc(m.plPeriod || "")}</div>
+      <div class="body">
+        <div class="duo">
+          <div class="mini"><div class="v pos">${fmtMoney(m.revenue)}</div><div class="k">Revenue</div></div>
+          <div class="mini"><div class="v neg">${fmtMoney(totalCosts)}</div><div class="k">Total Expenses</div></div>
+        </div>
+        <div>${revExpBars}</div>
+        <table class="stats">
+          <tr><td>Gross margin</td><td>${m.grossMargin == null ? "\u2014" : m.grossMargin.toFixed(2) + "%"}</td></tr>
+          <tr><td>Net income</td><td class="${niClass}">${fmtMoney(m.netIncome)}</td></tr>
+        </table>
+      </div>
+      <div class="hint">Click for details</div>
+    </div>
+
+    <div class="card" data-detail="margins">
+      <h2>Profit Margins</h2>
+      <div class="period">${esc(m.plPeriod || "")}</div>
+      <div class="gauges">
+        <div>${gaugeSvg(m.grossMargin, "Gross Profit", fmtMoney(m.grossProfit))}</div>
+        <div>${gaugeSvg(m.netMargin, "Net Profit", fmtMoney(m.netIncome))}</div>
+      </div>
+      <div class="hint">Click for details</div>
+    </div>
+
+    <div class="card wide" data-detail="cash">
+      <h2>Cash Balances</h2>
+      <div class="period">${esc(m.bsPeriod || "")}</div>
+      <div class="body">
+        <div class="duo">
+          <div class="mini"><div class="v pos">${fmtMoney(m.cash)}</div><div class="k">Total Cash in Bank</div></div>
+        </div>
+        <div>${cashBars}</div>
+      </div>
+      <div class="hint">Click for details</div>
+    </div>
+
+    <div class="card wide" data-detail="arap">
+      <h2>Receivables &amp; Payables</h2>
+      <div class="period">${esc(m.bsPeriod || "")}</div>
+      <div class="body">
+        <div class="duo">
+          <div class="mini"><div class="v">${fmtMoney(m.ar)}</div><div class="k">Accounts Receivable</div></div>
+          <div class="mini"><div class="v">${fmtMoney(m.ap)}</div><div class="k">Accounts Payable</div></div>
+        </div>
+        <div>${arapBars}</div>
+      </div>
+      <div class="hint">Click for details</div>
+    </div>`;
+
+  document.getElementById("uploader").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  document.title = (m.company ? m.company + " \u2014 " : "") + "Financial Dashboard";
+}
+
+/* ================= Detail modal (experimental drill-down) ================= */
+
+let currentMetrics = null;   // saved by renderDashboard so click handlers can use it
+
+function pctShareRows(items, total) {
+  return items.map(([k, v]) =>
+    `<tr><td>${esc(k)}</td><td>${fmtMoney(v)} <span style="color:var(--muted);font-weight:400">(${total ? (v / total * 100).toFixed(1) : "0.0"}%)</span></td></tr>`
+  ).join("");
+}
+
+function detailHTML(kind, m) {
+  const sub = `<div class="msub">${esc(m.company || "")}</div>`;
+
+  if (kind === "pnl") {
+    const incBars = m.incomeCategories.length ? pieSvg(topN(m.incomeCategories, 5)) : "<p class='empty'>No income categories found</p>";
+    const expBars = m.expenseCategories.length ? pieSvg(topN(m.expenseCategories, 5)) : "<p class='empty'>No expense categories found</p>";
+    return `<h3>Revenue &amp; Expenses — Detail</h3>${sub}
+      <h4>From revenue to net income</h4>
+      <table class="bridge">
+        <tr><td>Revenue</td><td>${fmtMoney(m.revenue)}</td></tr>
+        <tr class="sub"><td>− Cost of goods sold</td><td>${fmtMoney(m.cogs)}</td></tr>
+        <tr class="res"><td>= Gross profit</td><td>${fmtMoney(m.grossProfit)}</td></tr>
+        <tr class="sub"><td>− Operating expenses</td><td>${fmtMoney(m.expenses)}</td></tr>
+        <tr class="res"><td>= Net operating income</td><td>${fmtMoney(m.netOperatingIncome ?? ((m.grossProfit ?? 0) - (m.expenses ?? 0)))}</td></tr>
+        <tr class="sub"><td>− Other expenses</td><td>${fmtMoney(m.otherExpenses)}</td></tr>
+        <tr class="res"><td>= Net income</td><td class="${(m.netIncome || 0) >= 0 ? "pos" : "neg"}">${fmtMoney(m.netIncome)}</td></tr>
+      </table>
+      <h4>Income by category</h4>${incBars}
+      <h4>Largest operating expenses</h4>${expBars}`;
+  }
+
+  if (kind === "margins") {
+    const opInc = m.netOperatingIncome ?? ((m.grossProfit ?? 0) - (m.expenses ?? 0));
+    const opMargin = m.revenue ? (opInc / m.revenue * 100).toFixed(2) + "%" : "—";
+
+    // Revenue allocation: where each revenue dollar went
+    const alloc = [];
+    if (m.cogs > 0) alloc.push(["COGS", m.cogs]);
+    if (m.expenses > 0) alloc.push(["Operating expenses", m.expenses]);
+    if (m.otherExpenses > 0) alloc.push(["Other expenses", m.otherExpenses]);
+    if ((m.netIncome || 0) > 0) alloc.push(["Net profit", m.netIncome]);
+    const allocPie = (m.revenue && alloc.length)
+      ? pieSvg(alloc, { colors: ["#c9b458", "#e8564f", "#8a94a0", "#2ca01c"] }) : "";
+    const lossNote = (m.netIncome || 0) < 0
+      ? `<p class="empty" style="margin-top:8px">Costs exceeded revenue — net loss of ${fmtMoney(Math.abs(m.netIncome))}.</p>` : "";
+
+    // Expense categories as a share of revenue (common-size view)
+    const ratioRows = (m.revenue ? m.expenseCategories.slice(0, 5) : []).map(([k, v]) =>
+      `<tr><td>${esc(k)}</td><td>${(v / m.revenue * 100).toFixed(1)}%</td></tr>`).join("");
+
+    // Breakeven revenue: (operating + other expenses) ÷ gross margin ratio
+    const fixedCosts = (m.expenses || 0) + (m.otherExpenses || 0);
+    const breakeven = (m.grossMargin > 0) ? fixedCosts / (m.grossMargin / 100) : null;
+    const cushion = (breakeven != null && m.revenue != null) ? m.revenue - breakeven : null;
+
+    return `<h3>Profit Margins — Detail</h3>${sub}
+      <table class="bridge">
+        <tr><td>Gross margin</td><td>${m.grossMargin == null ? "—" : m.grossMargin.toFixed(2) + "%"}</td></tr>
+        <tr><td>Operating margin</td><td>${opMargin}</td></tr>
+        <tr><td>Net margin</td><td>${m.netMargin == null ? "—" : m.netMargin.toFixed(2) + "%"}</td></tr>
+      </table>
+      ${allocPie ? `<h4>Revenue allocation</h4>${allocPie}${lossNote}` : ""}
+      ${ratioRows ? `<h4>Largest expenses as % of revenue</h4><table class="bridge">${ratioRows}</table>` : ""}
+      ${breakeven != null ? `<h4>Breakeven</h4>
+      <table class="bridge">
+        <tr><td>Breakeven revenue <span style="color:var(--muted);font-weight:400;font-size:11px">at current gross margin</span></td><td>${fmtMoney(breakeven)}</td></tr>
+        <tr><td>${cushion >= 0 ? "Cushion above breakeven" : "Shortfall to breakeven"}</td><td class="${cushion >= 0 ? "pos" : "neg"}">${fmtMoney(Math.abs(cushion))}</td></tr>
+      </table>` : ""}`;
+  }
+
+  if (kind === "cash") {
+    const liquid = (m.cash || 0) + (m.undeposited || 0) + (m.ar || 0);
+    const ratio = v => v == null ? "\u2014" : v.toFixed(2);
+    return `<h3>Cash &amp; Liquidity — Detail</h3>${sub}
+      <h4>Liquid assets</h4>
+      <table class="bridge">
+        <tr><td>Cash in bank</td><td>${fmtMoney(m.cash)}</td></tr>
+        ${m.undeposited != null ? `<tr><td>Undeposited funds</td><td>${fmtMoney(m.undeposited)}</td></tr>` : ""}
+        <tr><td>Accounts receivable</td><td>${fmtMoney(m.ar)}</td></tr>
+        <tr class="res"><td>Total liquid</td><td>${fmtMoney(liquid)}</td></tr>
+      </table>
+      <h4>Against obligations</h4>
+      <table class="bridge">
+        <tr><td>Current liabilities</td><td>${fmtMoney(m.currentLiabilities)}</td></tr>
+        <tr><td>Working capital</td><td class="${(m.workingCapital || 0) >= 0 ? "pos" : "neg"}">${fmtMoney(m.workingCapital)}</td></tr>
+        <tr><td>Current ratio</td><td>${ratio(m.currentRatio)}</td></tr>
+        <tr><td>Quick ratio</td><td>${ratio(m.quickRatio)}</td></tr>
+      </table>`;
+  }
+
+  if (kind === "debt") {
+    const rows = m.debtItems.map(([k, v, t]) =>
+      `<tr><td>${esc(k)} <span style="color:var(--muted);font-size:11px">${t}</span></td><td>${fmtMoney(v)} <span style="color:var(--muted);font-weight:400">(${m.debtTotal ? (v / m.debtTotal * 100).toFixed(1) : "0.0"}%)</span></td></tr>`
+    ).join("");
+    return `<h3>Debt Summary — Detail</h3>${sub}
+      <h4>Composition</h4>
+      ${m.debtItems.length ? pieSvg(m.debtItems.map(([k, v]) => [k, v])) : "<p class='empty'>No debt on file</p>"}
+      <table class="bridge" style="margin-top:16px">
+        ${rows}
+        <tr class="res"><td>Total debt</td><td class="neg">${fmtMoney(m.debtTotal)}</td></tr>
+      </table>`;
+  }
+
+  if (kind === "arap") {
+    const net = (m.ar || 0) - (m.ap || 0);
+    const section = (title, byLabel, ag) => {
+      if (!ag || !ag.buckets) return "";
+      const ent = ag.entities.slice().sort((a, b) => b[1] - a[1]);
+      const top = ent.slice(0, 8);
+      const restSum = ent.slice(8).reduce((s, e) => s + e[1], 0);
+      const rows = top.map(([n, t, o]) =>
+        `<tr><td>${esc(n)}${o > 0.004 ? ` <span style="color:var(--red);font-size:11px">${fmtMoney(o, 0)} overdue</span>` : ""}</td><td>${fmtMoney(t)}</td></tr>`
+      ).join("") + (restSum > 0 ? `<tr><td style="color:var(--muted)">All other</td><td>${fmtMoney(restSum)}</td></tr>` : "");
+      return `<h4>${title} · ${esc(ag.meta.period)}</h4>
+        ${pieSvg(ag.buckets, { showZero: true })}
+        <h4>${byLabel}</h4>
+        <table class="bridge">
+          ${rows}
+          <tr class="res"><td>Total</td><td>${fmtMoney(ag.total)}</td></tr>
+        </table>`;
+    };
+    const noAging = (!pending.arAging && !pending.apAging)
+      ? `<p class="empty" style="margin-top:14px">Upload the A/R and A/P Aging Summary CSVs together with the other reports to see aging and per-customer/vendor detail here.</p>` : "";
+    return `<h3>Receivables &amp; Payables — Detail</h3>${sub}
+      <table class="bridge">
+        <tr><td>Accounts receivable</td><td>${fmtMoney(m.ar)}</td></tr>
+        <tr><td>Accounts payable</td><td>${fmtMoney(m.ap)}</td></tr>
+        <tr class="res"><td>Net position</td><td class="${net >= 0 ? "pos" : "neg"}">${fmtMoney(net)}</td></tr>
+      </table>
+      ${section("Receivable aging", "By customer", pending.arAging)}
+      ${section("Payable aging", "By vendor", pending.apAging)}
+      ${noAging}`;
+  }
+  return "";
+}
+
+function openDetail(kind) {
+  if (!currentMetrics) return;
+  document.getElementById("modal-content").innerHTML = detailHTML(kind, currentMetrics);
+  document.getElementById("modal").hidden = false;
+}
+
+document.getElementById("grid").addEventListener("click", e => {
+  const card = e.target.closest("[data-detail]");
+  if (card) openDetail(card.dataset.detail);
+});
+document.getElementById("modal-close").addEventListener("click", () => {
+  document.getElementById("modal").hidden = true;
+});
+document.getElementById("modal").addEventListener("click", e => {
+  if (e.target.id === "modal") document.getElementById("modal").hidden = true;
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.getElementById("modal").hidden = true;
+});
+
+/* ================= File handling UI ================= */
+
+const pending = { bs: null, pl: null, arAging: null, apAging: null };
+const dropzone = document.getElementById("dropzone");
+const fileinput = document.getElementById("fileinput");
+const statusEl = document.getElementById("status");
+const filelist = document.getElementById("filelist");
+
+function setStatus(msg, isErr) {
+  statusEl.textContent = msg;
+  statusEl.className = isErr ? "err" : "";
+}
+
+function showFileTag(name, role) {
+  const div = document.createElement("div");
+  div.className = "filetag";
+  div.innerHTML = `<span>${esc(name)}</span><span class="role ok">${esc(role)}</span>`;
+  filelist.appendChild(div);
+}
+
+function handleFiles(fileArray) {
+  const files = Array.from(fileArray).filter(f => /\.csv$/i.test(f.name));
+  if (!files.length) { setStatus("Those don't look like CSV files \u2014 export as CSV from QuickBooks.", true); return; }
+  let done = 0;
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const reportLine = (parseCsv(reader.result.replace(/^\uFEFF/, ""))[1]?.[0] || "").toLowerCase();
+        if (reportLine.includes("aging")) {
+          const ag = parseAgingReport(reader.result);
+          if (!ag.buckets) showFileTag(f.name, "Could not parse");
+          else if (reportLine.includes("a/r")) { pending.arAging = ag; showFileTag(f.name, "A/R Aging \u2713"); }
+          else if (reportLine.includes("a/p")) { pending.apAging = ag; showFileTag(f.name, "A/P Aging \u2713"); }
+          else showFileTag(f.name, "Not recognized");
+        } else {
+          const parsed = parseQbReport(reader.result);
+          const { bs, pl } = detectReports([parsed]);
+          if (bs) { pending.bs = parsed; showFileTag(f.name, "Balance Sheet \u2713"); }
+          else if (pl) { pending.pl = parsed; showFileTag(f.name, "Profit & Loss \u2713"); }
+          else showFileTag(f.name, "Not recognized");
+        }
+      } catch (e) {
+        showFileTag(f.name, "Could not parse");
+      }
+      if (++done === files.length) maybeRender();
+    };
+    reader.readAsText(f);
+  });
+}
+
+function maybeRender() {
+  if (pending.bs && pending.pl) {
+    try {
+      renderDashboard(extractMetrics(pending.bs, pending.pl));
+    } catch (e) {
+      setStatus("Something went wrong reading those reports \u2014 check they're standard QuickBooks Online exports.", true);
+    }
+  } else if (pending.bs) setStatus("Balance Sheet loaded \u2014 now add the Profit & Loss CSV.");
+  else if (pending.pl) setStatus("Profit & Loss loaded \u2014 now add the Balance Sheet CSV.");
+  else if (pending.arAging || pending.apAging) setStatus("Aging loaded \u2014 now add the Balance Sheet and Profit & Loss CSVs.");
+  else setStatus("Neither file was recognized as a QuickBooks Balance Sheet or Profit & Loss export.", true);
+}
+
+/* ================= QuickBooks snapshot loading ================= */
+
+async function loadQuickBooksSnapshot() {
+  const btn = document.getElementById("btn-qbo");
+  btn.disabled = true;
+  setStatus("Loading QuickBooks data\u2026");
+  try {
+    // Cache-bust so a freshly committed snapshot is picked up immediately.
+    const res = await fetch(QB_DATA_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error(res.status === 404
+      ? "No snapshot found yet \u2014 run the sync workflow once (link below)."
+      : "Fetch failed (" + res.status + ")");
+    const data = await res.json();
+
+    pending.bs = data.bs;
+    pending.pl = data.pl;
+    pending.arAging = data.arAging;
+    pending.apAging = data.apAging;
+
+    const when = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "unknown time";
+    showFileTag("QuickBooks \u2014 " + (data.company || "connected company"), "Synced " + when + " \u2713");
+    setStatus("");
+    maybeRender();
+  } catch (e) {
+    setStatus("Couldn't load QuickBooks data: " + e.message, true);
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("btn-qbo").addEventListener("click", loadQuickBooksSnapshot);
+
+// Show when the current snapshot was taken, plus the one-click re-sync link.
+(async function showSnapshotMeta() {
+  const meta = document.getElementById("qb-meta");
+  const syncLink = QB_SYNC_URL.includes("USERNAME/REPO") ? "" :
+    ' \u00b7 <a href="' + QB_SYNC_URL + '" target="_blank" rel="noopener">Pull fresh from QuickBooks</a>';
+  try {
+    const res = await fetch(QB_DATA_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const when = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "unknown";
+    meta.innerHTML = "Snapshot from " + esc(when) + syncLink;
+  } catch (e) {
+    meta.innerHTML = "No QuickBooks snapshot yet" + syncLink;
+  }
+})();
+
+dropzone.addEventListener("click", () => fileinput.click());
+dropzone.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") fileinput.click(); });
+fileinput.addEventListener("change", () => handleFiles(fileinput.files));
+["dragenter", "dragover"].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add("hover"); }));
+["dragleave", "drop"].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove("hover"); }));
+dropzone.addEventListener("drop", e => handleFiles(e.dataTransfer.files));
+
+document.getElementById("btn-print").addEventListener("click", () => window.print());
+document.getElementById("btn-reset").addEventListener("click", () => {
+  pending.bs = pending.pl = pending.arAging = pending.apAging = null;
+  filelist.innerHTML = ""; fileinput.value = "";
+  setStatus("");
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("uploader").style.display = "block";
+  document.title = "QuickBooks Financial Dashboard";
+});
+</script>
+</body>
+</html>
