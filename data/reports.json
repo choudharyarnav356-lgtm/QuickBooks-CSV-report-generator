@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-31T17:59:55.001Z",
+  "generatedAt": "2026-09-01T15:27:43.751Z",
   "company": "Sandbox Company US 7c70",
   "bs": {
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "BalanceSheet",
-      "period": "2026-01-01 to 2026-08-31"
+      "period": "2026-01-01 to 2026-09-01"
     },
     "rows": [
       [
@@ -211,7 +211,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "ProfitAndLoss",
-      "period": "2026-01-01 to 2026-08-31"
+      "period": "2026-01-01 to 2026-09-01"
     },
     "rows": [
       [
@@ -466,7 +466,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "AgedReceivables",
-      "period": "2026-08-31T10:59:54-07:00"
+      "period": "2026-09-01T08:27:43-07:00"
     },
     "buckets": [
       [
@@ -475,11 +475,11 @@
       ],
       [
         "1 - 30",
-        4114.52
+        3840.02
       ],
       [
         "31 - 60",
-        770
+        1044.5
       ],
       [
         "61 - 90",
@@ -583,7 +583,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "AgedPayables",
-      "period": "2026-08-31T10:59:54-07:00"
+      "period": "2026-09-01T08:27:43-07:00"
     },
     "buckets": [
       [
