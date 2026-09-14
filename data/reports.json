@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-13T14:54:55.063Z",
+  "generatedAt": "2026-09-14T16:57:31.543Z",
   "company": "Sandbox Company US 7c70",
   "bs": {
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "BalanceSheet",
-      "period": "2026-01-01 to 2026-09-13"
+      "period": "2026-01-01 to 2026-09-14"
     },
     "rows": [
       [
@@ -211,7 +211,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "ProfitAndLoss",
-      "period": "2026-01-01 to 2026-09-13"
+      "period": "2026-01-01 to 2026-09-14"
     },
     "rows": [
       [
@@ -466,7 +466,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "AgedReceivables",
-      "period": "2026-09-13T07:54:54-07:00"
+      "period": "2026-09-14T09:57:31-07:00"
     },
     "buckets": [
       [
@@ -475,11 +475,11 @@
       ],
       [
         "1 - 30",
-        1861.55
+        1153.85
       ],
       [
         "31 - 60",
-        3022.97
+        3730.67
       ],
       [
         "61 - 90",
@@ -490,7 +490,7 @@
         156
       ]
     ],
-    "total": 5281.5199999999995,
+    "total": 5281.52,
     "entities": [
       [
         "Amy's Bird Sanctuary",
@@ -583,7 +583,7 @@
     "meta": {
       "company": "Sandbox Company US 7c70",
       "report": "AgedPayables",
-      "period": "2026-09-13T07:54:54-07:00"
+      "period": "2026-09-14T09:57:31-07:00"
     },
     "buckets": [
       [
